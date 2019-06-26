@@ -1,6 +1,7 @@
 let http = require('http');
 let fs = require('fs');
 let path = require('path');
+let API = require('./api.js'); 
 
 const ip = '127.0.0.1';
 const port = 3000;
@@ -20,6 +21,11 @@ http.createServer = ((request, response) => {
   fs.readFile(file, (error, content) => { //Read the file from the hard drive
     if(error) {
       if (error.code == 'ENOENT') {
+        //Is this an API call? Or  should we serve a file?
+        if (API.catchAPIrequest(request.url)) {
+          response.end(API.exec(request.url), 'utf-8');
+        } else
+        //Not an API call. File just doesn't exist
         fs.readFile('./404.html', (error, content) => {
           response.writeHead(200, {'Content-Type': type});
           response.end(content, 'utf-8');
